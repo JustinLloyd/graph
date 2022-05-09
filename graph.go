@@ -45,3 +45,22 @@ func (g *Graph) IncomingEdges(node *Node) []*Edge {
 	}
 	return incomingEdges
 }
+
+func (g *Graph) Neighbors(node *Node) []*Node {
+	neighborsMap := make(map[*Node]bool)
+	for _, edge := range g.Edges {
+		if edge.From == node {
+			neighborsMap[edge.To] = true
+		}
+		if edge.To == node {
+			neighborsMap[edge.From] = true
+		}
+	}
+
+	var neighbors []*Node
+	for neighbor := range neighborsMap {
+		neighbors = append(neighbors, neighbor)
+	}
+
+	return neighbors
+}
