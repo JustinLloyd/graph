@@ -2,6 +2,7 @@ package graph
 
 type Node struct {
 	Value interface{}
+	Name  *string
 }
 
 type Edge struct {
