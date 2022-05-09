@@ -6,8 +6,10 @@ type Node struct {
 }
 
 type Edge struct {
-	From, To *Node
+	From     *Node
+	To       *Node
 	Weight   float64
+	Directed bool
 }
 
 type Graph struct {
@@ -21,9 +23,14 @@ func (g *Graph) AddNode(name *string, object interface{}) *Node {
 	return node
 }
 
-func (g *Graph) AddEdge(from, to *Node, weight float64) *Edge {
-	edge := &Edge{From: from, To: to, Weight: weight}
+func (g *Graph) AddEdge(from, to *Node, weight float64, directed bool) *Edge {
+	edge := &Edge{From: from, To: to, Weight: weight, Directed: directed}
 	g.Edges = append(g.Edges, edge)
+	if !directed {
+		reverseEdge := &Edge{From: to, To: from, Weight: weight, Directed: false}
+		g.Edges = append(g.Edges, reverseEdge)
+	}
+
 	return edge
 }
 
