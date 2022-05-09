@@ -1,8 +1,8 @@
 package graph
 
 type Node struct {
-	Value interface{}
-	Name  *string
+	Name   *string
+	Object interface{}
 }
 
 type Edge struct {
@@ -15,8 +15,8 @@ type Graph struct {
 	Edges []*Edge
 }
 
-func (g *Graph) AddNode(value interface{}, name *string) *Node {
-	node := &Node{Value: value, Name: name}
+func (g *Graph) AddNode(name *string, object interface{}) *Node {
+	node := &Node{Name: name, Object: object}
 	g.Nodes = append(g.Nodes, node)
 	return node
 }
