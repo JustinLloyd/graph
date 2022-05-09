@@ -15,8 +15,8 @@ type Graph struct {
 	Edges []*Edge
 }
 
-func (g *Graph) AddNode(value interface{}) *Node {
-	node := &Node{Value: value}
+func (g *Graph) AddNode(value interface{}, name *string) *Node {
+	node := &Node{Value: value, Name: name}
 	g.Nodes = append(g.Nodes, node)
 	return node
 }
