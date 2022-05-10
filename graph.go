@@ -72,3 +72,18 @@ func (g *Graph) Neighbors(node *Node) []*Node {
 
 	return neighbors
 }
+
+func (g *Graph) DFS(start *Node, visited map[*Node]bool, process func(*Node)) {
+	// Mark the current node as visited
+	visited[start] = true
+
+	// Process the current node (e.g., print its value or name)
+	process(start)
+
+	// Recur for all the neighbors of this node
+	for _, neighbor := range g.Neighbors(start) {
+		if !visited[neighbor] {
+			g.DFS(neighbor, visited, process)
+		}
+	}
+}
