@@ -87,3 +87,37 @@ func (g *Graph) DFS(start *Node, visited map[*Node]bool, process func(*Node)) {
 		}
 	}
 }
+
+func (g *Graph) DetectCycles(start *Node) [][]*Node {
+	visited := make(map[*Node]bool)
+	path := []*Node{}
+	cycles := [][]*Node{}
+	g.findCyclesDFS(start, visited, path, &cycles)
+	return cycles
+}
+
+func (g *Graph) findCyclesDFS(current *Node, visited map[*Node]bool, path []*Node, cycles *[][]*Node) {
+	visited[current] = true
+	path = append(path, current)
+
+	for _, neighbor := range g.Neighbors(current) {
+		if !visited[neighbor] {
+			g.findCyclesDFS(neighbor, visited, path, cycles)
+		} else if isInPath(neighbor, path) {
+			cycle := append([]*Node{}, path...) // Copy the current path
+			cycle = append(cycle, neighbor)     // Add the current neighbor to close the cycle
+			*cycles = append(*cycles, cycle)
+		}
+	}
+
+	visited[current] = false // Backtrack from the current node
+}
+
+func isInPath(node *Node, path []*Node) bool {
+	for _, n := range path {
+		if n == node {
+			return true
+		}
+	}
+	return false
+}
