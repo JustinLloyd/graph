@@ -92,17 +92,17 @@ func (g *Graph) DetectCycles(start *Node) [][]*Node {
 	visited := make(map[*Node]bool)
 	path := []*Node{}
 	cycles := [][]*Node{}
-	g.findCyclesDFS(start, visited, path, &cycles)
+	g.dfsFindCycles(start, visited, path, &cycles)
 	return cycles
 }
 
-func (g *Graph) findCyclesDFS(current *Node, visited map[*Node]bool, path []*Node, cycles *[][]*Node) {
+func (g *Graph) dfsFindCycles(current *Node, visited map[*Node]bool, path []*Node, cycles *[][]*Node) {
 	visited[current] = true
 	path = append(path, current)
 
 	for _, neighbor := range g.Neighbors(current) {
 		if !visited[neighbor] {
-			g.findCyclesDFS(neighbor, visited, path, cycles)
+			g.dfsFindCycles(neighbor, visited, path, cycles)
 		} else if isInPath(neighbor, path) {
 			cycle := append([]*Node{}, path...) // Copy the current path
 			cycle = append(cycle, neighbor)     // Add the current neighbor to close the cycle
@@ -120,4 +120,40 @@ func isInPath(node *Node, path []*Node) bool {
 		}
 	}
 	return false
+}
+
+func (g *Graph) TopologicalSort() []*Node {
+	stack := []*Node{}
+	visited := make(map[*Node]bool)
+
+	// Visit all the vertices one by one
+	for _, node := range g.Nodes {
+		if !visited[node] {
+			g.dfsTopologicalSort(node, visited, &stack)
+		}
+	}
+
+	return reverse(stack)
+}
+
+func (g *Graph) dfsTopologicalSort(v *Node, visited map[*Node]bool, stack *[]*Node) {
+	// Mark the current node as visited
+	visited[v] = true
+
+	// Recur for all the vertices adjacent to this vertex
+	for _, neighbor := range g.Neighbors(v) {
+		if !visited[neighbor] {
+			g.dfsTopologicalSort(neighbor, visited, stack)
+		}
+	}
+
+	// Push current vertex to stack which stores result
+	*stack = append(*stack, v)
+}
+
+func reverse(nodes []*Node) []*Node {
+	for i, j := 0, len(nodes)-1; i < j; i, j = i+1, j-1 {
+		nodes[i], nodes[j] = nodes[j], nodes[i]
+	}
+	return nodes
 }
