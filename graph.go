@@ -181,3 +181,20 @@ func (g *Graph) BFS(start *Node, process func(*Node)) {
 		}
 	}
 }
+
+func (g *Graph) ConnectedComponents() [][]*Node {
+	visited := make(map[*Node]bool)
+	var components [][]*Node
+
+	for _, node := range g.Nodes {
+		if !visited[node] {
+			var component []*Node
+			g.DFS(node, visited, func(n *Node) {
+				component = append(component, n)
+			})
+			components = append(components, component)
+		}
+	}
+
+	return components
+}
