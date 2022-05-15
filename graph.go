@@ -157,3 +157,27 @@ func reverse(nodes []*Node) []*Node {
 	}
 	return nodes
 }
+
+func (g *Graph) BFS(start *Node, process func(*Node)) {
+	visited := make(map[*Node]bool)
+	queue := []*Node{start}
+
+	for len(queue) > 0 {
+		// Dequeue a vertex from queue and process it
+		node := queue[0]
+		queue = queue[1:]
+		if visited[node] {
+			continue
+		}
+		visited[node] = true
+		process(node)
+
+		// Get all adjacent vertices of the dequeued vertex
+		// If an adjacent vertex is not visited, then mark it visited and enqueue it
+		for _, neighbor := range g.Neighbors(node) {
+			if !visited[neighbor] {
+				queue = append(queue, neighbor)
+			}
+		}
+	}
+}
