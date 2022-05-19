@@ -277,3 +277,36 @@ func (g *Graph) ClassifyEdges() map[*Edge]EdgeType {
 
 	return classification
 }
+
+func (g *Graph) IsDAG() bool {
+	visited := make(map[*Node]bool)
+	onStack := make(map[*Node]bool) // Keep track of nodes currently on the DFS stack
+
+	var dfs func(node *Node) bool
+	dfs = func(node *Node) bool {
+		visited[node] = true
+		onStack[node] = true
+
+		for _, neighbor := range g.Neighbors(node) {
+			// If the neighbor is on the current DFS stack, a cycle is detected
+			if onStack[neighbor] {
+				return false
+			}
+
+			if !visited[neighbor] && !dfs(neighbor) {
+				return false
+			}
+		}
+
+		onStack[node] = false // Remove node from DFS stack
+		return true
+	}
+
+	for _, node := range g.Nodes {
+		if !visited[node] && !dfs(node) {
+			return false
+		}
+	}
+
+	return true
+}
