@@ -1,5 +1,14 @@
 package graph
 
+type EdgeType int
+
+const (
+	TreeEdge EdgeType = iota
+	BackEdge
+	ForwardEdge
+	CrossEdge
+)
+
 type Node struct {
 	Name   *string
 	Object interface{}
@@ -197,4 +206,74 @@ func (g *Graph) ConnectedComponents() [][]*Node {
 	}
 
 	return components
+}
+
+func (et EdgeType) String() string {
+	switch et {
+	case TreeEdge:
+		return "Tree Edge"
+	case BackEdge:
+		return "Back Edge"
+	case ForwardEdge:
+		return "Forward Edge"
+	case CrossEdge:
+		return "Cross Edge"
+	}
+
+	return "Unknown Edge Type"
+}
+
+func (g *Graph) FindEdge(from, to *Node) *Edge {
+	for _, edge := range g.Edges {
+		if edge.Directed {
+			if edge.From == from && edge.To == to {
+				return edge
+			}
+		} else {
+			if (edge.From == from && edge.To == to) || (edge.From == to && edge.To == from) {
+				return edge
+			}
+		}
+	}
+
+	return nil // Return nil if no such edge is found
+}
+
+func (g *Graph) ClassifyEdges() map[*Edge]EdgeType {
+	classification := make(map[*Edge]EdgeType)
+	visited := make(map[*Node]bool)
+	timestamps := make(map[*Node][]int)
+	time := 0
+
+	var dfs func(*Node)
+	dfs = func(node *Node) {
+		visited[node] = true
+		timestamps[node] = []int{time, 0}
+		time++
+
+		for _, neighbor := range g.Neighbors(node) {
+			edge := g.FindEdge(node, neighbor)
+			if !visited[neighbor] {
+				classification[edge] = TreeEdge
+				dfs(neighbor)
+			} else if timestamps[neighbor][0] > timestamps[node][0] {
+				classification[edge] = ForwardEdge
+			} else if timestamps[neighbor][1] == 0 {
+				classification[edge] = BackEdge
+			} else {
+				classification[edge] = CrossEdge
+			}
+		}
+
+		timestamps[node][1] = time
+		time++
+	}
+
+	for _, node := range g.Nodes {
+		if !visited[node] {
+			dfs(node)
+		}
+	}
+
+	return classification
 }
