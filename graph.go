@@ -310,3 +310,14 @@ func (g *Graph) IsDAG() bool {
 
 	return true
 }
+
+func (g *Graph) IsWeighted() bool {
+	for _, edge := range g.Edges {
+		// Check if the weight of the edge is different from the default (e.g., 0)
+		// If so, it indicates that the graph is weighted
+		if edge.Weight != 0 {
+			return true
+		}
+	}
+	return false
+}
