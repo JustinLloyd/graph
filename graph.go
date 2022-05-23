@@ -1,5 +1,7 @@
 package graph
 
+import "math"
+
 type EdgeType int
 
 const (
@@ -316,6 +318,108 @@ func (g *Graph) IsWeighted() bool {
 		// Check if the weight of the edge is different from the default (e.g., 0)
 		// If so, it indicates that the graph is weighted
 		if edge.Weight != 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Graph) AStar(start, goal *Node) []*Node {
+	openSet := []*Node{start}
+
+	gScore := make(map[*Node]float64)
+	for _, node := range g.Nodes {
+		gScore[node] = math.Inf(1)
+	}
+	gScore[start] = 0
+
+	fScore := make(map[*Node]float64)
+	for _, node := range g.Nodes {
+		fScore[node] = math.Inf(1)
+	}
+	fScore[start] = heuristic(start, goal, g.Edges)
+
+	cameFrom := make(map[*Node]*Node)
+
+	for len(openSet) > 0 {
+		current := openSet[0]
+		for _, node := range openSet {
+			if fScore[node] < fScore[current] {
+				current = node
+			}
+		}
+
+		if current == goal {
+			return reconstructPath(cameFrom, current)
+		}
+
+		openSet = removeFromSet(openSet, current)
+
+		for _, neighbor := range g.Neighbors(current) {
+			edge := g.FindEdge(current, neighbor)
+			tentativeGScore := gScore[current] + edge.Weight
+
+			if tentativeGScore < gScore[neighbor] {
+				cameFrom[neighbor] = current
+				gScore[neighbor] = tentativeGScore
+				fScore[neighbor] = gScore[neighbor] + heuristic(neighbor, goal, g.Edges)
+				if !inSet(openSet, neighbor) {
+					openSet = append(openSet, neighbor)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func heuristic(node, goal *Node, edges []*Edge) float64 {
+	minWeight := math.Inf(1)
+	for _, edge := range edges {
+		if (edge.From == node && edge.To == goal) || (edge.To == node && edge.From == goal) {
+			if edge.Weight < minWeight {
+				minWeight = edge.Weight
+			}
+		}
+	}
+
+	return minWeight
+}
+
+func distance(from, to *Node, edges []*Edge) float64 {
+	for _, edge := range edges {
+		if (edge.From == from && edge.To == to) || (edge.To == from && edge.From == to) {
+			return edge.Weight
+		}
+	}
+	return math.Inf(1)
+}
+
+func reconstructPath(cameFrom map[*Node]*Node, current *Node) []*Node {
+	path := []*Node{current}
+	for {
+		previous, exists := cameFrom[current]
+		if !exists {
+			break
+		}
+		path = append([]*Node{previous}, path...)
+		current = previous
+	}
+	return path
+}
+
+func removeFromSet(set []*Node, node *Node) []*Node {
+	for i, n := range set {
+		if n == node {
+			return append(set[:i], set[i+1:]...)
+		}
+	}
+	return set
+}
+
+func inSet(set []*Node, node *Node) bool {
+	for _, n := range set {
+		if n == node {
 			return true
 		}
 	}
