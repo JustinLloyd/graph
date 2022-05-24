@@ -324,28 +324,23 @@ func (g *Graph) IsWeighted() bool {
 	return false
 }
 
-func (g *Graph) AStar(start, goal *Node) []*Node {
+func (g *Graph) AStar(start *Node, goal *Node) []*Node {
 	openSet := []*Node{start}
-
-	gScore := make(map[*Node]float64)
-	for _, node := range g.Nodes {
-		gScore[node] = math.Inf(1)
-	}
-	gScore[start] = 0
-
-	fScore := make(map[*Node]float64)
-	for _, node := range g.Nodes {
-		fScore[node] = math.Inf(1)
-	}
-	fScore[start] = heuristic(start, goal, g.Edges)
-
 	cameFrom := make(map[*Node]*Node)
+	gScore := make(map[*Node]float64)
+	gScore[start] = 0
+	fScore := make(map[*Node]float64)
+	fScore[start] = gScore[start] // Assuming heuristic cost from start to goal is 0
 
 	for len(openSet) > 0 {
 		current := openSet[0]
-		for _, node := range openSet {
-			if fScore[node] < fScore[current] {
+		minFScore := fScore[current]
+
+		for _, node := range openSet[1:] {
+			score := fScore[node]
+			if score < minFScore {
 				current = node
+				minFScore = score
 			}
 		}
 
@@ -355,16 +350,20 @@ func (g *Graph) AStar(start, goal *Node) []*Node {
 
 		openSet = removeFromSet(openSet, current)
 
-		for _, neighbor := range g.Neighbors(current) {
+		neighbors := g.Neighbors(current)
+		for _, neighbor := range neighbors {
 			edge := g.FindEdge(current, neighbor)
-			tentativeGScore := gScore[current] + edge.Weight
 
-			if tentativeGScore < gScore[neighbor] {
-				cameFrom[neighbor] = current
-				gScore[neighbor] = tentativeGScore
-				fScore[neighbor] = gScore[neighbor] + heuristic(neighbor, goal, g.Edges)
-				if !inSet(openSet, neighbor) {
-					openSet = append(openSet, neighbor)
+			// Check for directed edge when graph is not a DAG
+			if edge != nil && (edge.Directed == false || edge.From == current) {
+				tentativeGScore := gScore[current] + edge.Weight
+				if tentativeGScore < gScore[neighbor] {
+					cameFrom[neighbor] = current
+					gScore[neighbor] = tentativeGScore
+					fScore[neighbor] = tentativeGScore
+					if !inSet(openSet, neighbor) {
+						openSet = append(openSet, neighbor)
+					}
 				}
 			}
 		}
