@@ -12,7 +12,7 @@ const (
 )
 
 type Node struct {
-	Name   *string
+	Name   string
 	Object interface{}
 }
 
@@ -28,7 +28,7 @@ type Graph struct {
 	Edges []*Edge
 }
 
-func (g *Graph) AddNode(name *string, object interface{}) *Node {
+func (g *Graph) AddNode(name string, object interface{}) *Node {
 	node := &Node{Name: name, Object: object}
 	g.Nodes = append(g.Nodes, node)
 	return node
